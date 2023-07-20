@@ -3,12 +3,16 @@ package chat
 import (
 	"chat2api/apireq"
 	"chat2api/config"
+	"io"
+	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/google/uuid"
+	"github.com/launchdarkly/eventsource"
 )
 
 var (
@@ -48,14 +52,63 @@ var (
 		"parent_message_id": "aaa10d6a-8671-4308-9886-8591990f5539",
 		"model": "text-davinci-002-render-sha",
 		"timezone_offset_min": -480,
-		"history_and_training_disabled": false,
+		"history_and_training_disabled": true,
 		"arkose_token": null
+	}`
+	ApiRespStr = `{
+		"id": "chatcmpl-LLKfuOEHqVW2AtHks7wAekyrnPAoj",
+		"object": "chat.completion",
+		"created": 1689864805,
+		"model": "gpt-3.5-turbo",
+		"usage": {
+			"prompt_tokens": 0,
+			"completion_tokens": 0,
+			"total_tokens": 0
+		},
+		"choices": [
+			{
+				"message": {
+					"role": "assistant",
+					"content": "Hello! How can I assist you today?"
+				},
+				"finish_reason": "stop",
+				"index": 0
+			}
+		]
+	}`
+	ApiRespStrStream = `{
+		"id": "chatcmpl-afUFyvbTa7259yNeDqaHRBQxH2PLH",
+		"object": "chat.completion.chunk",
+		"created": 1689867370,
+		"model": "gpt-3.5-turbo",
+		"choices": [
+			{
+				"delta": {
+					"content": "Hello"
+				},
+				"index": 0,
+				"finish_reason": null
+			}
+		]
+	}`
+	ApiRespStrStreamEnd = `{
+		"id": "chatcmpl-afUFyvbTa7259yNeDqaHRBQxH2PLH",
+		"object": "chat.completion.chunk",
+		"created": 1689867370,
+		"model": "gpt-3.5-turbo",
+		"choices": [
+			{
+				"delta": {},
+				"index": 0,
+				"finish_reason": "stop"
+			}
+		]
 	}`
 )
 
 func Completions(r *ghttp.Request) {
 	ctx := r.Context()
-	g.Log().Debug(ctx, "Conversation start....................")
+	// g.Log().Debug(ctx, "Conversation start....................")
 	authkey := strings.TrimPrefix(r.Header.Get("authorization"), "Bearer ")
 	if authkey == "" {
 		r.Response.Status = 401
@@ -77,7 +130,7 @@ func Completions(r *ghttp.Request) {
 		r.Response.WriteJson(gjson.New(`{"error": "bad request"}`))
 		return
 	}
-	g.Dump(req)
+	// g.Dump(req)
 	// 遍历 req.Messages 拼接 newMessages
 	newMessages := ""
 	for _, message := range req.Messages {
@@ -85,9 +138,121 @@ func Completions(r *ghttp.Request) {
 	}
 	ChatReq := gjson.New(ChatReqStr)
 
-	ChatReq.Set("messages.0.content.parts", newMessages)
+	ChatReq.Set("messages.0.content.parts.0", newMessages)
 	ChatReq.Set("messages.0.id", uuid.NewString())
 	ChatReq.Set("parent_message_id", uuid.NewString())
-	g.Dump(ChatReq)
+
+	// 请求openai
+	resp, err := g.Client().SetHeaderMap(g.MapStrStr{
+		"Authorization": "Bearer " + token,
+		"Content-Type":  "application/json",
+	}).Post(ctx, config.APISERVER, gjson.New(ChatReq).MustToJson())
+	if err != nil {
+		r.Response.Status = 500
+		r.Response.WriteJson(gjson.New(`{"detail": "internal server error"}`))
+		return
+	}
+	defer resp.Close()
+	// resp.RawDump()
+	// 如果返回结果不是200
+	if resp.StatusCode != 200 {
+		r.Response.Status = resp.StatusCode
+		r.Response.WriteJson(gjson.New(resp.ReadAllString()))
+		return
+	}
+
+	// 流式返回
+	if req.Stream {
+		//  流式回应
+		rw := r.Response.RawWriter()
+		flusher, ok := rw.(http.Flusher)
+		if !ok {
+			g.Log().Error(ctx, "rw.(http.Flusher) error")
+			r.Response.WriteStatusExit(500)
+			return
+		}
+		// r.Response.Header().Set("Content-Type", "text/event-stream")
+		r.Response.Header().Set("Cache-Control", "no-cache")
+		r.Response.Header().Set("Connection", "keep-alive")
+		// r.Response.Flush()
+		message := ""
+		decoder := eventsource.NewDecoder(resp.Body)
+		id := config.GenerateID(29)
+		for {
+			event, err := decoder.Decode()
+			if err != nil {
+				if err == io.EOF {
+					break
+				}
+				continue
+			}
+			text := event.Data()
+			if text == "" {
+				continue
+			}
+			if text == "[DONE]" {
+				apiRespStrEnd := gjson.New(ApiRespStrStreamEnd)
+				apiRespStrEnd.Set("id", id)
+				apiRespStrEnd.Set("created", time.Now().Unix())
+				rw.Write([]byte("data: " + apiRespStrEnd.String() + "\n\n"))
+				rw.Write([]byte("data: " + text + "\n\n"))
+				flusher.Flush()
+				break
+			}
+			// gjson.New(text).Dump()
+			role := gjson.New(text).Get("message.author.role").String()
+			if role == "assistant" {
+				messageTemp := gjson.New(text).Get("message.content.parts.0").String()
+				//
+				content := strings.Replace(messageTemp, message, "", 1)
+				if content == "" {
+					continue
+				}
+				message = messageTemp
+				apiResp := gjson.New(ApiRespStrStream)
+				apiResp.Set("id", id)
+				apiResp.Set("created", time.Now().Unix())
+				apiResp.Set("choices.0.delta.content", content)
+				rw.Write([]byte("data: " + apiResp.String() + "\n\n"))
+				flusher.Flush()
+			}
+
+		}
+
+	} else {
+		// 非流式回应
+		content := ""
+		decoder := eventsource.NewDecoder(resp.Body)
+		for {
+			event, err := decoder.Decode()
+			if err != nil {
+				if err == io.EOF {
+					break
+				}
+				continue
+			}
+			text := event.Data()
+			if text == "" {
+				continue
+			}
+			if text == "[DONE]" {
+				break
+			}
+			// gjson.New(text).Dump()
+			role := gjson.New(text).Get("message.author.role").String()
+			if role == "assistant" {
+				message := gjson.New(text).Get("message.content.parts.0").String()
+				if message != "" {
+					content = message
+				}
+			}
+		}
+		apiResp := gjson.New(ApiRespStr)
+		apiResp.Set("choices.0.message.content", content)
+		id := config.GenerateID(29)
+		apiResp.Set("id", id)
+		apiResp.Set("created", time.Now().Unix())
+		r.Response.WriteJson(apiResp)
+	}
 
 }

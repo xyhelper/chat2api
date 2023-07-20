@@ -1,3 +1,5 @@
 PORT: 8089
-APISERVER: https://freechat.xyhelper.cn
+APISERVER: https://freechat.xyhelper.cn/backend-api/conversation
+
+
 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: "xyhelper.cn"

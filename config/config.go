@@ -1,13 +1,15 @@
 package config
 
 import (
+	"math/rand"
+
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gctx"
 )
 
 var (
 	PORT      = 8080
-	APISERVER = "https://freechat.xyhelper.cn"
+	APISERVER = "https://freechat.xyhelper.cn/backend-api/conversation"
 )
 
 func init() {
@@ -32,4 +34,15 @@ func SK2TOKEN(ctx g.Ctx, SK string) (token string) {
 	}
 
 	return g.Cfg().MustGetWithEnv(ctx, SK).String()
+}
+
+func GenerateID(length int) string {
+	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	// rand.Seed(time.Now().UnixNano())
+
+	id := "chatcmpl-"
+	for i := 0; i < length; i++ {
+		id += string(charset[rand.Intn(len(charset))])
+	}
+	return id
 }

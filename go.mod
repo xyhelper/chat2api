@@ -2,9 +2,12 @@ module chat2api
 
 go 1.20
 
-require github.com/gogf/gf/v2 v2.4.4
+require (
+	github.com/gogf/gf/v2 v2.4.4
+	github.com/launchdarkly/eventsource v1.7.1
+)
 
-require github.com/google/uuid v1.3.0 // indirect
+require github.com/google/uuid v1.3.0
 
 require (
 	github.com/BurntSushi/toml v1.1.0 // indirect
@@ -27,5 +30,4 @@ require (
 	golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab // indirect
 	golang.org/x/text v0.3.8-0.20211105212822-18b340fc7af2 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
-	modernc.org/libc v1.24.1
 )
