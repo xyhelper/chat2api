@@ -12,8 +12,9 @@ func main() {
 	s := g.Server()
 	s.SetPort(config.PORT)
 	chatGroup := s.Group("/v1/chat")
-	chatGroup.ALL("/completions", chat.Completions)
 	chatGroup.Middleware(MiddlewareCORS)
+
+	chatGroup.ALL("/completions", chat.Completions)
 	s.Run()
 }
 func MiddlewareCORS(r *ghttp.Request) {
