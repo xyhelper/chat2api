@@ -109,12 +109,14 @@ var (
 func Completions(r *ghttp.Request) {
 	ctx := r.Context()
 	// g.Log().Debug(ctx, "Conversation start....................")
+
 	authkey := strings.TrimPrefix(r.Header.Get("authorization"), "Bearer ")
 	if authkey == "" {
 		r.Response.Status = 401
 		r.Response.WriteJson(gjson.New(ErrNoAuth))
 		return
 	}
+	g.Log().Info(ctx, "authkey: ", authkey)
 	token := config.SK2TOKEN(ctx, authkey)
 	if token == "" {
 		r.Response.Status = 401
