@@ -5,6 +5,7 @@ import (
 	"chat2api/v1/chat"
 
 	"github.com/gogf/gf/v2/frame/g"
+	"github.com/gogf/gf/v2/net/ghttp"
 )
 
 func main() {
@@ -12,5 +13,10 @@ func main() {
 	s.SetPort(config.PORT)
 	chatGroup := s.Group("/v1/chat")
 	chatGroup.ALL("/completions", chat.Completions)
+	chatGroup.Middleware(MiddlewareCORS)
 	s.Run()
+}
+func MiddlewareCORS(r *ghttp.Request) {
+	r.Response.CORSDefault()
+	r.Middleware.Next()
 }
