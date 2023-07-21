@@ -173,7 +173,7 @@ func Completions(r *ghttp.Request) {
 			r.Response.WriteStatusExit(500)
 			return
 		}
-		// r.Response.Header().Set("Content-Type", "text/event-stream")
+		r.Response.Header().Set("Content-Type", "text/event-stream; charset=utf-8")
 		r.Response.Header().Set("Cache-Control", "no-cache")
 		r.Response.Header().Set("Connection", "keep-alive")
 		// r.Response.Flush()
