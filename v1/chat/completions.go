@@ -2,7 +2,9 @@ package chat
 
 import (
 	"chat2api/apireq"
+	apirespstream "chat2api/apirespStream"
 	"chat2api/config"
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -11,7 +13,10 @@ import (
 	"github.com/gogf/gf/v2/encoding/gjson"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
+	"github.com/gogf/gf/v2/text/gstr"
+	"github.com/gogf/gf/v2/util/gconv"
 	"github.com/google/uuid"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/launchdarkly/eventsource"
 )
 
@@ -91,19 +96,7 @@ var (
 			}
 		]
 	}`
-	ApiRespStrStreamEnd = `{
-		"id": "chatcmpl-afUFyvbTa7259yNeDqaHRBQxH2PLH",
-		"object": "chat.completion.chunk",
-		"created": 1689867370,
-		"model": "gpt-3.5-turbo",
-		"choices": [
-			{
-				"delta": {},
-				"index": 0,
-				"finish_reason": "stop"
-			}
-		]
-	}`
+	ApiRespStrStreamEnd = `{"id":"apirespid","object":"chat.completion.chunk","created":apicreated,"model": apirespmodel","choices":[{"delta": {},"index": 0,"finish_reason": "stop"}]}`
 )
 
 func Completions(r *ghttp.Request) {
@@ -196,13 +189,16 @@ func Completions(r *ghttp.Request) {
 				continue
 			}
 			if text == "[DONE]" {
-				apiRespStrEnd := gjson.New(ApiRespStrStreamEnd)
-				apiRespStrEnd.Set("id", id)
-				apiRespStrEnd.Set("created", time.Now().Unix())
-				if req.Model == "gpt-4" {
-					apiRespStrEnd.Set("model", "gpt-4")
-				}
-				rw.Write([]byte("data: " + apiRespStrEnd.String() + "\n\n"))
+				apiRespStrEnd := gstr.Replace(ApiRespStrStreamEnd, "apirespid", id)
+				apiRespStrEnd = gstr.Replace(apiRespStrEnd, "apicreated", gconv.String(time.Now().Unix()))
+				apiRespStrEnd = gstr.Replace(apiRespStrEnd, "apirespmodel", req.Model)
+				rw.Write([]byte("data: " + apiRespStrEnd + "\n\n"))
+				// apiRespStrEnd.Set("id", id)
+				// apiRespStrEnd.Set("created", time.Now().Unix())
+				// if req.Model == "gpt-4" {
+				// 	apiRespStrEnd.Set("model", "gpt-4")
+				// }
+				// rw.Write([]byte("data: " + apiRespStrEnd.String() + "\n\n"))
 				rw.Write([]byte("data: " + text + "\n\n"))
 				flusher.Flush()
 				break
@@ -224,7 +220,19 @@ func Completions(r *ghttp.Request) {
 				if req.Model == "gpt-4" {
 					apiResp.Set("model", "gpt-4")
 				}
-				rw.Write([]byte("data: " + apiResp.String() + "\n\n"))
+				apiRespStruct := &apirespstream.ApiRespStream{}
+				gconv.Struct(apiResp, apiRespStruct)
+				// g.Dump(apiRespStruct)
+				// 创建一个jsoniter的Encoder
+				json := jsoniter.ConfigCompatibleWithStandardLibrary
+
+				// 将结构体转换为JSON文本并保持顺序
+				sortJson, err := json.Marshal(apiRespStruct)
+				if err != nil {
+					fmt.Println("转换JSON出错:", err)
+					return
+				}
+				rw.Write([]byte("data: " + string(sortJson) + "\n\n"))
 				flusher.Flush()
 			}
 
