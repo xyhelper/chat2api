@@ -143,6 +143,9 @@ func Completions(r *ghttp.Request) {
 	ChatReq.Set("messages.0.content.parts.0", newMessages)
 	ChatReq.Set("messages.0.id", uuid.NewString())
 	ChatReq.Set("parent_message_id", uuid.NewString())
+	if req.Model == "gpt-4" {
+		ChatReq.Set("model", "gpt-4-plugins")
+	}
 
 	// 请求openai
 	resp, err := g.Client().SetHeaderMap(g.MapStrStr{
@@ -196,6 +199,9 @@ func Completions(r *ghttp.Request) {
 				apiRespStrEnd := gjson.New(ApiRespStrStreamEnd)
 				apiRespStrEnd.Set("id", id)
 				apiRespStrEnd.Set("created", time.Now().Unix())
+				if req.Model == "gpt-4" {
+					apiRespStrEnd.Set("model", "gpt-4")
+				}
 				rw.Write([]byte("data: " + apiRespStrEnd.String() + "\n\n"))
 				rw.Write([]byte("data: " + text + "\n\n"))
 				flusher.Flush()
@@ -215,6 +221,9 @@ func Completions(r *ghttp.Request) {
 				apiResp.Set("id", id)
 				apiResp.Set("created", time.Now().Unix())
 				apiResp.Set("choices.0.delta.content", content)
+				if req.Model == "gpt-4" {
+					apiResp.Set("model", "gpt-4")
+				}
 				rw.Write([]byte("data: " + apiResp.String() + "\n\n"))
 				flusher.Flush()
 			}
@@ -254,6 +263,9 @@ func Completions(r *ghttp.Request) {
 		id := config.GenerateID(29)
 		apiResp.Set("id", id)
 		apiResp.Set("created", time.Now().Unix())
+		if req.Model == "gpt-4" {
+			apiResp.Set("model", "gpt-4")
+		}
 		r.Response.WriteJson(apiResp)
 	}
 
