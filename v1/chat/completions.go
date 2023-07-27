@@ -96,7 +96,7 @@ var (
 			}
 		]
 	}`
-	ApiRespStrStreamEnd = `{"id":"apirespid","object":"chat.completion.chunk","created":apicreated,"model": apirespmodel","choices":[{"delta": {},"index": 0,"finish_reason": "stop"}]}`
+	ApiRespStrStreamEnd = `{"id":"apirespid","object":"chat.completion.chunk","created":apicreated,"model": "apirespmodel","choices":[{"delta": {},"index": 0,"finish_reason": "stop"}]}`
 )
 
 func Completions(r *ghttp.Request) {
