@@ -2,6 +2,8 @@
 
 将OPENAI官网接口转换为API格式，以兼容针对API开发的应用。
 
+据说给个star就可以免费用
+
 ```bash
 curl https://api.xyhelper.cn/v1/chat/completions \
   -H "Content-Type: application/json" \
