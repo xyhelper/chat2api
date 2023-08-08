@@ -1,7 +1,7 @@
 package apirespstream
 
 // ApiRespStream represents the JSON structure
-type ApiRespStream struct {
+type ApiRespStreamStruct struct {
 	ID      string      `json:"id"`
 	Object  string      `json:"object"`
 	Created int64       `json:"created"`

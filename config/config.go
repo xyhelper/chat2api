@@ -22,6 +22,8 @@ func init() {
 	if apiServer != "" {
 		APISERVER = apiServer
 	}
+	g.Log().Info(ctx, "PORT:", PORT)
+	g.Log().Info(ctx, "APISERVER:", APISERVER)
 }
 
 func SK2TOKEN(ctx g.Ctx, SK string) (token string) {

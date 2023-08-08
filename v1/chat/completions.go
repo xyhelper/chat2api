@@ -2,7 +2,7 @@ package chat
 
 import (
 	"chat2api/apireq"
-	apirespstream "chat2api/apirespStream"
+	"chat2api/apirespstream"
 	"chat2api/config"
 	"fmt"
 	"io"
@@ -220,7 +220,7 @@ func Completions(r *ghttp.Request) {
 				if req.Model == "gpt-4" {
 					apiResp.Set("model", "gpt-4")
 				}
-				apiRespStruct := &apirespstream.ApiRespStream{}
+				apiRespStruct := &apirespstream.ApiRespStreamStruct{}
 				gconv.Struct(apiResp, apiRespStruct)
 				// g.Dump(apiRespStruct)
 				// 创建一个jsoniter的Encoder
