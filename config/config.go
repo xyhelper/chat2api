@@ -10,6 +10,7 @@ import (
 var (
 	PORT      = 8080
 	APISERVER = "https://freechat.xyhelper.cn/backend-api/conversation"
+	PASSMODE  = false
 )
 
 func init() {
@@ -22,8 +23,14 @@ func init() {
 	if apiServer != "" {
 		APISERVER = apiServer
 	}
+	passMode := g.Cfg().MustGetWithEnv(ctx, "PASSMODE").Bool()
+	if passMode {
+		PASSMODE = passMode
+	}
+
 	g.Log().Info(ctx, "PORT:", PORT)
 	g.Log().Info(ctx, "APISERVER:", APISERVER)
+	g.Log().Info(ctx, "PASSMODE:", PASSMODE)
 }
 
 func SK2TOKEN(ctx g.Ctx, SK string) (token string) {

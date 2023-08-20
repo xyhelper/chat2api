@@ -1,5 +1,6 @@
 # PORT: 8089
 APISERVER: https://freechat.xyhelper.cn/backend-api/conversation
+PASSMODE: true
 
 
 sk-api-xyhelper-cn-free-token-for-everyone-xyhelper: "xyhelper.cn"

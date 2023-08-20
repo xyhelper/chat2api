@@ -57,7 +57,7 @@ var (
 		"parent_message_id": "aaa10d6a-8671-4308-9886-8591990f5539",
 		"model": "text-davinci-002-render-sha",
 		"timezone_offset_min": -480,
-		"history_and_training_disabled": true,
+		"history_and_training_disabled": false,
 		"arkose_token": null
 	}`
 	ApiRespStr = `{
@@ -110,7 +110,12 @@ func Completions(r *ghttp.Request) {
 		return
 	}
 	g.Log().Info(ctx, "authkey: ", authkey)
-	token := config.SK2TOKEN(ctx, authkey)
+	var token string
+	if config.PASSMODE {
+		token = authkey
+	} else {
+		token = config.SK2TOKEN(ctx, authkey)
+	}
 	if token == "" {
 		r.Response.Status = 401
 		r.Response.WriteJson(gjson.New(ErrKeyInvalid))
@@ -137,7 +142,7 @@ func Completions(r *ghttp.Request) {
 	ChatReq.Set("messages.0.id", uuid.NewString())
 	ChatReq.Set("parent_message_id", uuid.NewString())
 	if req.Model == "gpt-4" {
-		ChatReq.Set("model", "gpt-4-plugins")
+		ChatReq.Set("model", "gpt-4")
 	}
 
 	// 请求openai
