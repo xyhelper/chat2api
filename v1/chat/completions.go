@@ -57,7 +57,7 @@ var (
 		"parent_message_id": "aaa10d6a-8671-4308-9886-8591990f5539",
 		"model": "text-davinci-002-render-sha",
 		"timezone_offset_min": -480,
-		"history_and_training_disabled": false,
+		"history_and_training_disabled": true,
 		"arkose_token": null
 	}`
 	ApiRespStr = `{
@@ -271,6 +271,10 @@ func Completions(r *ghttp.Request) {
 				}
 			}
 		}
+		completionTokens := CountTokens(content)
+		promptTokens := CountTokens(newMessages)
+		totalTokens := completionTokens + promptTokens
+
 		apiResp := gjson.New(ApiRespStr)
 		apiResp.Set("choices.0.message.content", content)
 		id := config.GenerateID(29)
@@ -279,6 +283,9 @@ func Completions(r *ghttp.Request) {
 		if req.Model == "gpt-4" {
 			apiResp.Set("model", "gpt-4")
 		}
+		apiResp.Set("usage.prompt_tokens", promptTokens)
+		apiResp.Set("usage.completion_tokens", completionTokens)
+		apiResp.Set("usage.total_tokens", totalTokens)
 		r.Response.WriteJson(apiResp)
 	}
 
