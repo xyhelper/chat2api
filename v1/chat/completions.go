@@ -150,6 +150,9 @@ func Completions(r *ghttp.Request) {
 	if gstr.HasPrefix(req.Model, "gpt-4-32k") {
 		ChatReq.Set("model", "gpt-4-plugins")
 	}
+	if ChatReq.Get("model").String() != "gpt-4-plugins" {
+		ChatReq.Remove("plugin_ids")
+	}
 	// ChatReq.Dump()
 	// 请求openai
 	resp, err := g.Client().SetHeaderMap(g.MapStrStr{
