@@ -141,10 +141,10 @@ func Completions(r *ghttp.Request) {
 	ChatReq.Set("messages.0.content.parts.0", newMessages)
 	ChatReq.Set("messages.0.id", uuid.NewString())
 	ChatReq.Set("parent_message_id", uuid.NewString())
-	if req.Model == "gpt-4" {
+	if gstr.HasPrefix(req.Model, "gpt-4") {
 		ChatReq.Set("model", "gpt-4")
 	}
-	if req.Model == "gpt-4-32k" {
+	if gstr.HasPrefix(req.Model, "gpt-4-32k'") {
 		ChatReq.Set("model", "gpt-4-plugins")
 	}
 
