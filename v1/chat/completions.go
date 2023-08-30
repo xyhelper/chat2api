@@ -144,6 +144,9 @@ func Completions(r *ghttp.Request) {
 	if req.Model == "gpt-4" {
 		ChatReq.Set("model", "gpt-4")
 	}
+	if req.Model == "gpt-4-32k" {
+		ChatReq.Set("model", "gpt-4-plugins")
+	}
 
 	// 请求openai
 	resp, err := g.Client().SetHeaderMap(g.MapStrStr{
