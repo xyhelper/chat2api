@@ -54,6 +54,7 @@ var (
 				"metadata": {}
 			}
 		],
+		"plugin_ids": [],
 		"parent_message_id": "aaa10d6a-8671-4308-9886-8591990f5539",
 		"model": "text-davinci-002-render-sha",
 		"timezone_offset_min": -480,
@@ -136,18 +137,20 @@ func Completions(r *ghttp.Request) {
 	for _, message := range req.Messages {
 		newMessages += message.Content + "\n"
 	}
+	// g.Dump(newMessages)
 	ChatReq := gjson.New(ChatReqStr)
 
 	ChatReq.Set("messages.0.content.parts.0", newMessages)
 	ChatReq.Set("messages.0.id", uuid.NewString())
 	ChatReq.Set("parent_message_id", uuid.NewString())
+
 	if gstr.HasPrefix(req.Model, "gpt-4") {
 		ChatReq.Set("model", "gpt-4")
 	}
-	if gstr.HasPrefix(req.Model, "gpt-4-32k'") {
+	if gstr.HasPrefix(req.Model, "gpt-4-32k") {
 		ChatReq.Set("model", "gpt-4-plugins")
 	}
-
+	// ChatReq.Dump()
 	// 请求openai
 	resp, err := g.Client().SetHeaderMap(g.MapStrStr{
 		"Authorization": "Bearer " + token,
