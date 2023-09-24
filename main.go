@@ -11,6 +11,7 @@ import (
 func main() {
 	s := g.Server()
 	s.SetPort(config.PORT)
+	s.BindHandler("/", Index)
 	chatGroup := s.Group("/v1/chat")
 	chatGroup.Middleware(MiddlewareCORS)
 
@@ -20,4 +21,8 @@ func main() {
 func MiddlewareCORS(r *ghttp.Request) {
 	r.Response.CORSDefault()
 	r.Middleware.Next()
+}
+
+func Index(r *ghttp.Request) {
+	r.Response.Write("Hello Xyhelper! This is chat2api.")
 }

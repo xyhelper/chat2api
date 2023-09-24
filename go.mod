@@ -3,14 +3,14 @@ module chat2api
 go 1.20
 
 require (
-	github.com/gogf/gf/v2 v2.5.2
+	github.com/gogf/gf/v2 v2.5.4
 	github.com/launchdarkly/eventsource v1.7.1
 )
 
 require (
 	github.com/google/uuid v1.3.1
 	github.com/json-iterator/go v1.1.12
-	github.com/pkoukk/tiktoken-go v0.1.5
+	github.com/pkoukk/tiktoken-go v0.1.6
 )
 
 require (
@@ -31,10 +31,10 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
-	go.opentelemetry.io/otel v1.17.0 // indirect
-	go.opentelemetry.io/otel/metric v1.17.0 // indirect
-	go.opentelemetry.io/otel/sdk v1.17.0 // indirect
-	go.opentelemetry.io/otel/trace v1.17.0 // indirect
+	go.opentelemetry.io/otel v1.18.0 // indirect
+	go.opentelemetry.io/otel/metric v1.18.0 // indirect
+	go.opentelemetry.io/otel/sdk v1.18.0 // indirect
+	go.opentelemetry.io/otel/trace v1.18.0 // indirect
 	golang.org/x/net v0.15.0 // indirect
 	golang.org/x/sys v0.12.0 // indirect
 	golang.org/x/text v0.13.0 // indirect

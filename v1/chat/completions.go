@@ -196,7 +196,7 @@ func Completions(r *ghttp.Request) {
 				if err == io.EOF {
 					break
 				}
-				continue
+				break
 			}
 			text := event.Data()
 			if text == "" {
