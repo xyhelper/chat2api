@@ -5,11 +5,13 @@ import (
 
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gctx"
+	"github.com/gogf/gf/v2/text/gstr"
 )
 
 var (
 	PORT      = 8080
 	APISERVER = "https://freechat.xyhelper.cn/backend-api/conversation"
+	APIHOST   = "https://freechat.xyhelper.cn"
 	PASSMODE  = false
 )
 
@@ -23,6 +25,11 @@ func init() {
 	if apiServer != "" {
 		APISERVER = apiServer
 	}
+	// 从apiServer中获取APIHOST
+	apihost := gstr.SubStr(apiServer, 0, gstr.PosR(apiServer, "/backend-api/conversation"))
+	if apihost != "" {
+		APIHOST = apihost
+	}
 	passMode := g.Cfg().MustGetWithEnv(ctx, "PASSMODE").Bool()
 	if passMode {
 		PASSMODE = passMode
@@ -31,6 +38,7 @@ func init() {
 	g.Log().Info(ctx, "PORT:", PORT)
 	g.Log().Info(ctx, "APISERVER:", APISERVER)
 	g.Log().Info(ctx, "PASSMODE:", PASSMODE)
+	g.Log().Info(ctx, "APIHOST:", APIHOST)
 }
 
 func SK2TOKEN(ctx g.Ctx, SK string) (token string) {

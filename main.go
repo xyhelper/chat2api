@@ -16,6 +16,7 @@ func main() {
 	chatGroup.Middleware(MiddlewareCORS)
 
 	chatGroup.ALL("/completions", chat.Completions)
+	chatGroup.POST("/gpt4v", chat.Gpt4v)
 	s.Run()
 }
 func MiddlewareCORS(r *ghttp.Request) {

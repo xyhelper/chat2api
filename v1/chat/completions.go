@@ -54,12 +54,19 @@ var (
 				"metadata": {}
 			}
 		],
+		"suggestions": [
+			"Design a database schema for an online merch store.",
+			"Make a content strategy for a newsletter featuring free local weekend events.",
+			"Help me study vocabulary: write a sentence for me to fill in the blank, and I'll try to pick the correct option.",
+			"Come up with 5 concepts for a retro-style arcade game."
+		],
 		"plugin_ids": [],
 		"parent_message_id": "aaa10d6a-8671-4308-9886-8591990f5539",
 		"model": "text-davinci-002-render-sha",
 		"timezone_offset_min": -480,
-		"history_and_training_disabled": true,
-		"arkose_token": null
+		"history_and_training_disabled": false,
+		"arkose_token": null,
+		"force_paragen": false
 	}`
 	ApiRespStr = `{
 		"id": "chatcmpl-LLKfuOEHqVW2AtHks7wAekyrnPAoj",
@@ -158,7 +165,7 @@ func Completions(r *ghttp.Request) {
 	resp, err := g.Client().SetHeaderMap(g.MapStrStr{
 		"Authorization": "Bearer " + token,
 		"Content-Type":  "application/json",
-	}).Post(ctx, config.APISERVER, gjson.New(ChatReq).MustToJson())
+	}).Post(ctx, config.APISERVER, ChatReq.MustToJson())
 	if err != nil {
 		r.Response.Status = 500
 		r.Response.WriteJson(gjson.New(`{"detail": "internal server error"}`))
