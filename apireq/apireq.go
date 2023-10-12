@@ -6,7 +6,8 @@ type Message struct {
 }
 
 type Req struct {
-	Messages []Message `json:"messages"`
-	Model    string    `json:"model"`
-	Stream   bool      `json:"stream"`
+	Messages  []Message `json:"messages"`
+	Model     string    `json:"model"`
+	Stream    bool      `json:"stream"`
+	PluginIds []int     `json:"plugin_ids"`
 }
