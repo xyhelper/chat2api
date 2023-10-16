@@ -13,6 +13,7 @@ var (
 	APISERVER = "https://freechat.xyhelper.cn/backend-api/conversation"
 	APIHOST   = "https://freechat.xyhelper.cn"
 	PASSMODE  = false
+	MAXTIME   = 0
 )
 
 func init() {
@@ -34,11 +35,16 @@ func init() {
 	if passMode {
 		PASSMODE = passMode
 	}
+	maxtime := g.Cfg().MustGetWithEnv(ctx, "MAXTIME").Int()
+	if maxtime > 0 {
+		MAXTIME = maxtime
+	}
 
 	g.Log().Info(ctx, "PORT:", PORT)
 	g.Log().Info(ctx, "APISERVER:", APISERVER)
 	g.Log().Info(ctx, "PASSMODE:", PASSMODE)
 	g.Log().Info(ctx, "APIHOST:", APIHOST)
+	g.Log().Info(ctx, "MAXTIME:", MAXTIME)
 }
 
 func SK2TOKEN(ctx g.Ctx, SK string) (token string) {

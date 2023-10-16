@@ -4,6 +4,7 @@ import (
 	"chat2api/apireq"
 	"chat2api/apirespstream"
 	"chat2api/config"
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -64,7 +65,7 @@ var (
 		"parent_message_id": "aaa10d6a-8671-4308-9886-8591990f5539",
 		"model": "text-davinci-002-render-sha",
 		"timezone_offset_min": -480,
-		"history_and_training_disabled": false,
+		"history_and_training_disabled": true,
 		"arkose_token": null,
 		"force_paragen": false
 	}`
@@ -110,6 +111,12 @@ var (
 func Completions(r *ghttp.Request) {
 	ctx := r.Context()
 	// g.Log().Debug(ctx, "Conversation start....................")
+	if config.MAXTIME > 0 {
+		// 创建带有超时的context
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, time.Duration(config.MAXTIME)*time.Second)
+		defer cancel()
+	}
 
 	authkey := strings.TrimPrefix(r.Header.Get("authorization"), "Bearer ")
 	if authkey == "" {
