@@ -183,9 +183,10 @@ func Completions(r *ghttp.Request) {
 		return
 	}
 	defer resp.Close()
-	// resp.RawDump()
 	// 如果返回结果不是200
 	if resp.StatusCode != 200 {
+		resp.RawDump()
+
 		r.Response.Status = resp.StatusCode
 		r.Response.WriteJson(gjson.New(resp.ReadAllString()))
 		return
@@ -235,15 +236,16 @@ func Completions(r *ghttp.Request) {
 				flusher.Flush()
 				break
 			}
-			// gjson.New(text).Dump()
+			gjson.New(text).Dump()
 			role := gjson.New(text).Get("message.author.role").String()
 			if role == "assistant" {
 				messageTemp := gjson.New(text).Get("message.content.parts.0").String()
-				// 如果 messageTemp 不包含 message 则跳过
-				if !gstr.Contains(messageTemp, message) {
+				// g.Log().Debug(ctx, "messageTemp: ", messageTemp)
+				// 如果 messageTemp 不包含 message 且plugin_ids为空
+				if !gstr.Contains(messageTemp, message) && len(req.PluginIds) == 0 {
 					continue
 				}
-				//
+
 				content := strings.Replace(messageTemp, message, "", 1)
 				if content == "" {
 					continue
