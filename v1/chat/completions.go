@@ -157,7 +157,10 @@ func Completions(r *ghttp.Request) {
 	ChatReq.Set("messages.0.content.parts.0", newMessages)
 	ChatReq.Set("messages.0.id", uuid.NewString())
 	ChatReq.Set("parent_message_id", uuid.NewString())
-
+	if len(req.PluginIds) > 0 {
+		ChatReq.Set("plugin_ids", req.PluginIds)
+	}
+	// ChatReq.Dump()
 	if gstr.HasPrefix(req.Model, "gpt-4") {
 		ChatReq.Set("model", "gpt-4")
 	}
@@ -236,6 +239,10 @@ func Completions(r *ghttp.Request) {
 			role := gjson.New(text).Get("message.author.role").String()
 			if role == "assistant" {
 				messageTemp := gjson.New(text).Get("message.content.parts.0").String()
+				// 如果 messageTemp 不包含 message 则跳过
+				if !gstr.Contains(messageTemp, message) {
+					continue
+				}
 				//
 				content := strings.Replace(messageTemp, message, "", 1)
 				if content == "" {
@@ -246,9 +253,10 @@ func Completions(r *ghttp.Request) {
 				apiResp.Set("id", id)
 				apiResp.Set("created", time.Now().Unix())
 				apiResp.Set("choices.0.delta.content", content)
-				if req.Model == "gpt-4" {
-					apiResp.Set("model", "gpt-4")
-				}
+				// if req.Model == "gpt-4" {
+				// 	apiResp.Set("model", "gpt-4")
+				// }
+				apiResp.Set("model", req.Model)
 				apiRespStruct := &apirespstream.ApiRespStreamStruct{}
 				gconv.Struct(apiResp, apiRespStruct)
 				// g.Dump(apiRespStruct)
