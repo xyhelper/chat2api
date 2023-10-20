@@ -236,7 +236,7 @@ func Completions(r *ghttp.Request) {
 				flusher.Flush()
 				break
 			}
-			gjson.New(text).Dump()
+			// gjson.New(text).Dump()
 			role := gjson.New(text).Get("message.author.role").String()
 			if role == "assistant" {
 				messageTemp := gjson.New(text).Get("message.content.parts.0").String()
