@@ -104,7 +104,7 @@ func Gpt4v(r *ghttp.Request) {
 			r.Response.Status = 400
 			r.Response.WriteJsonExit(g.Map{
 				"code":   0,
-				"detail": "upload file to azure failed",
+				"detail": err.Error(),
 			})
 		}
 		file_ids = append(file_ids, file_id)
@@ -286,7 +286,12 @@ func UploadAzure(ctx g.Ctx, filepath string, token string) (file_id string, down
 		return
 	}
 	defer res.Close()
-	// res.RawDump()
+	if res.StatusCode != 200 {
+		res.RawDump()
+		err = gerror.New("get upload_url fail:" + res.Status)
+		return
+	}
+	//
 	resJson := gjson.New(res.ReadAllString())
 	// resJson.Dump()
 	upload_url := resJson.Get("upload_url").String()
