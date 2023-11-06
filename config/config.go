@@ -14,6 +14,7 @@ var (
 	APIHOST   = "https://freechat.xyhelper.cn"
 	PASSMODE  = false
 	MAXTIME   = 0
+	NOPLUGINS = false
 )
 
 func init() {
@@ -38,6 +39,10 @@ func init() {
 	maxtime := g.Cfg().MustGetWithEnv(ctx, "MAXTIME").Int()
 	if maxtime > 0 {
 		MAXTIME = maxtime
+	}
+	noplugins := g.Cfg().MustGetWithEnv(ctx, "NOPLUGINS").Bool()
+	if noplugins {
+		NOPLUGINS = noplugins
 	}
 
 	g.Log().Info(ctx, "PORT:", PORT)

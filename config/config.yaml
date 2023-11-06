@@ -2,6 +2,7 @@
 APISERVER: https://freechat.xyhelper.cn/backend-api/conversation
 PASSMODE: true
 MAXTIME: 60
+NOPLUGINS: true
 
 
 sk-api-xyhelper-cn-free-token-for-everyone-xyhelper: "xyhelper.cn"

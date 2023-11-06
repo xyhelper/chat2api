@@ -164,9 +164,11 @@ func Completions(r *ghttp.Request) {
 	if gstr.HasPrefix(req.Model, "gpt-4") {
 		ChatReq.Set("model", "gpt-4")
 	}
-	if gstr.HasPrefix(req.Model, "gpt-4-32k") {
-		ChatReq.Set("model", "gpt-4-plugins")
-		ChatReq.Set("plugin_ids", req.PluginIds)
+	if !config.NOPLUGINS {
+		if gstr.HasPrefix(req.Model, "gpt-4-32k") {
+			ChatReq.Set("model", "gpt-4-plugins")
+			ChatReq.Set("plugin_ids", req.PluginIds)
+		}
 	}
 	if ChatReq.Get("model").String() != "gpt-4-plugins" {
 		ChatReq.Remove("plugin_ids")
@@ -314,9 +316,11 @@ func Completions(r *ghttp.Request) {
 		id := config.GenerateID(29)
 		apiResp.Set("id", id)
 		apiResp.Set("created", time.Now().Unix())
-		if req.Model == "gpt-4" {
-			apiResp.Set("model", "gpt-4")
-		}
+		// if req.Model == "gpt-4" {
+		// 	apiResp.Set("model", "gpt-4")
+		// }
+		apiResp.Set("model", req.Model)
+
 		apiResp.Set("usage.prompt_tokens", promptTokens)
 		apiResp.Set("usage.completion_tokens", completionTokens)
 		apiResp.Set("usage.total_tokens", totalTokens)
