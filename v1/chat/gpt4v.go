@@ -130,7 +130,7 @@ func Gpt4v(r *ghttp.Request) {
 	ChatReq.Set("model", "gpt-4")
 	// ChatReq.Remove("plugin_ids")
 
-	ChatReq.Dump()
+	// ChatReq.Dump()
 	// 请求openai
 	resp, err := g.Client().SetHeaderMap(g.MapStrStr{
 		"Authorization": "Bearer " + token,

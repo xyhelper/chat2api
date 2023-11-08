@@ -190,7 +190,7 @@ func Completions(r *ghttp.Request) {
 	defer resp.Close()
 	// 如果返回结果不是200
 	if resp.StatusCode != 200 {
-		resp.RawDump()
+		// resp.RawDump()
 
 		r.Response.Status = resp.StatusCode
 		r.Response.WriteJson(gjson.New(resp.ReadAllString()))
