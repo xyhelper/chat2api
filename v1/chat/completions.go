@@ -173,6 +173,9 @@ func Completions(r *ghttp.Request) {
 	if ChatReq.Get("model").String() != "gpt-4-plugins" {
 		ChatReq.Remove("plugin_ids")
 	}
+	if config.KEEPHISTORY {
+		ChatReq.Set("history_and_training_disabled", false)
+	}
 	// ChatReq.Dump()
 	// 请求openai
 	resp, err := g.Client().SetHeaderMap(g.MapStrStr{

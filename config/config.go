@@ -9,12 +9,13 @@ import (
 )
 
 var (
-	PORT      = 8080
-	APISERVER = "https://freechat.xyhelper.cn/backend-api/conversation"
-	APIHOST   = "https://freechat.xyhelper.cn"
-	PASSMODE  = false
-	MAXTIME   = 0
-	NOPLUGINS = false
+	PORT        = 8080
+	APISERVER   = "https://freechat.xyhelper.cn/backend-api/conversation"
+	APIHOST     = "https://freechat.xyhelper.cn"
+	PASSMODE    = false
+	MAXTIME     = 0
+	NOPLUGINS   = false
+	KEEPHISTORY = false
 )
 
 func init() {
@@ -44,12 +45,18 @@ func init() {
 	if noplugins {
 		NOPLUGINS = noplugins
 	}
+	keepHistory := g.Cfg().MustGetWithEnv(ctx, "KEEPHISTORY").Bool()
+	if keepHistory {
+		KEEPHISTORY = keepHistory
+	}
 
 	g.Log().Info(ctx, "PORT:", PORT)
 	g.Log().Info(ctx, "APISERVER:", APISERVER)
 	g.Log().Info(ctx, "PASSMODE:", PASSMODE)
 	g.Log().Info(ctx, "APIHOST:", APIHOST)
 	g.Log().Info(ctx, "MAXTIME:", MAXTIME)
+	g.Log().Info(ctx, "NOPLUGINS:", NOPLUGINS)
+	g.Log().Info(ctx, "KEEPHISTORY:", KEEPHISTORY)
 }
 
 func SK2TOKEN(ctx g.Ctx, SK string) (token string) {
