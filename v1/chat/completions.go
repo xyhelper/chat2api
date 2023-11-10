@@ -170,6 +170,9 @@ func Completions(r *ghttp.Request) {
 			ChatReq.Set("plugin_ids", req.PluginIds)
 		}
 	}
+	if gstr.HasPrefix(req.Model, "gpt-4-turbo") {
+		ChatReq.Set("model", "gpt-4-gizmo")
+	}
 	if ChatReq.Get("model").String() != "gpt-4-plugins" {
 		ChatReq.Remove("plugin_ids")
 	}
