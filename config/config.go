@@ -10,8 +10,8 @@ import (
 
 var (
 	PORT        = 8080
-	APISERVER   = "https://freechat.xyhelper.cn/backend-api/conversation"
-	APIHOST     = "https://freechat.xyhelper.cn"
+	APISERVER   = "http://chatproxy/backend-api/conversation"
+	APIHOST     = "http://chatproxy"
 	PASSMODE    = false
 	MAXTIME     = 0
 	NOPLUGINS   = false

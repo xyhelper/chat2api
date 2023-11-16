@@ -162,7 +162,8 @@ func Completions(r *ghttp.Request) {
 	}
 	// ChatReq.Dump()
 	if gstr.HasPrefix(req.Model, "gpt-4") {
-		ChatReq.Set("model", "gpt-4")
+		// ChatReq.Set("model", "gpt-4")
+		ChatReq.Set("model", "gpt-4-gizmo")
 		// if config.KEEPHISTORY {
 		// 	ChatReq.Set("model", "gpt-4-gizmo")
 		// }
