@@ -69,6 +69,102 @@ var (
 		"arkose_token": null,
 		"force_paragen": false
 	}`
+	Chat4ReqStr = `
+	{
+		"action": "next",
+		"messages": [
+			{
+				"id": "aaa2b182-d834-4f30-91f3-f791fa953204",
+				"author": {
+					"role": "user"
+				},
+				"content": {
+					"content_type": "text",
+					"parts": [
+						"画一只猫1231231231"
+					]
+				},
+				"metadata": {}
+			}
+		],
+		"parent_message_id": "aaa11581-bceb-46c5-bc76-cb84be69725e",
+		"model": "gpt-4-gizmo",
+		"timezone_offset_min": -480,
+		"suggestions": [],
+		"history_and_training_disabled": true,
+		"conversation_mode": {
+			"gizmo": {
+				"gizmo": {
+					"id": "g-YyyyMT9XH",
+					"organization_id": "org-OROoM5KiDq6bcfid37dQx4z4",
+					"short_url": "g-YyyyMT9XH-chatgpt-classic",
+					"author": {
+						"user_id": "user-u7SVk5APwT622QC7DPe41GHJ",
+						"display_name": "ChatGPT",
+						"selected_display": "name",
+						"is_verified": true
+					},
+					"voice": {
+						"id": "ember"
+					},
+					"display": {
+						"name": "ChatGPT Classic",
+						"description": "The latest version of GPT-4 with no additional capabilities",
+						"welcome_message": "Hello",
+						"profile_picture_url": "https://files.oaiusercontent.com/file-i9IUxiJyRubSIOooY5XyfcmP?se=2123-10-13T01%3A11%3A31Z&sp=r&sv=2021-08-06&sr=b&rscc=max-age%3D31536000%2C%20immutable&rscd=attachment%3B%20filename%3Dgpt-4.jpg&sig=ZZP%2B7IWlgVpHrIdhD1C9wZqIvEPkTLfMIjx4PFezhfE%3D",
+						"categories": []
+					},
+					"share_recipient": "link",
+					"updated_at": "2023-11-06T01:11:32.191060+00:00",
+					"last_interacted_at": "2023-11-18T07:50:19.340421+00:00",
+					"tags": [
+						"public",
+						"first_party"
+					]
+				},
+				"tools": [],
+				"files": [],
+				"product_features": {
+					"attachments": {
+						"type": "retrieval",
+						"accepted_mime_types": [
+							"text/x-c",
+							"text/html",
+							"application/x-latext",
+							"text/plain",
+							"text/x-ruby",
+							"text/x-typescript",
+							"text/x-c++",
+							"text/x-java",
+							"text/x-sh",
+							"application/vnd.openxmlformats-officedocument.presentationml.presentation",
+							"text/x-script.python",
+							"text/javascript",
+							"text/x-tex",
+							"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+							"application/msword",
+							"application/pdf",
+							"text/x-php",
+							"text/markdown",
+							"application/json",
+							"text/x-csharp"
+						],
+						"image_mime_types": [
+							"image/jpeg",
+							"image/png",
+							"image/gif",
+							"image/webp"
+						],
+						"can_accept_all_mime_types": true
+					}
+				}
+			},
+			"kind": "gizmo_interaction",
+			"gizmo_id": "g-YyyyMT9XH"
+		},
+		"force_paragen": false,
+		"force_rate_limit": false
+	}`
 	ApiRespStr = `{
 		"id": "chatcmpl-LLKfuOEHqVW2AtHks7wAekyrnPAoj",
 		"object": "chat.completion",
@@ -152,33 +248,18 @@ func Completions(r *ghttp.Request) {
 		newMessages += message.Content + "\n"
 	}
 	// g.Dump(newMessages)
-	ChatReq := gjson.New(ChatReqStr)
+	var ChatReq *gjson.Json
+	if gstr.HasPrefix(req.Model, "gpt-4") {
+		ChatReq = gjson.New(Chat4ReqStr)
+	} else {
+		ChatReq = gjson.New(ChatReqStr)
+	}
 
 	ChatReq.Set("messages.0.content.parts.0", newMessages)
 	ChatReq.Set("messages.0.id", uuid.NewString())
 	ChatReq.Set("parent_message_id", uuid.NewString())
 	if len(req.PluginIds) > 0 {
 		ChatReq.Set("plugin_ids", req.PluginIds)
-	}
-	// ChatReq.Dump()
-	if gstr.HasPrefix(req.Model, "gpt-4") {
-		// ChatReq.Set("model", "gpt-4")
-		ChatReq.Set("model", "gpt-4-gizmo")
-		// if config.KEEPHISTORY {
-		// 	ChatReq.Set("model", "gpt-4-gizmo")
-		// }
-	}
-	if !config.NOPLUGINS {
-		if gstr.HasPrefix(req.Model, "gpt-4-32k") {
-			ChatReq.Set("model", "gpt-4-plugins")
-			ChatReq.Set("plugin_ids", req.PluginIds)
-		}
-	}
-	if gstr.HasPrefix(req.Model, "gpt-4-turbo") {
-		ChatReq.Set("model", "gpt-4-gizmo")
-	}
-	if ChatReq.Get("model").String() != "gpt-4-plugins" {
-		ChatReq.Remove("plugin_ids")
 	}
 	if config.KEEPHISTORY {
 		ChatReq.Set("history_and_training_disabled", false)
@@ -188,6 +269,7 @@ func Completions(r *ghttp.Request) {
 	resp, err := g.Client().SetHeaderMap(g.MapStrStr{
 		"Authorization": "Bearer " + token,
 		"Content-Type":  "application/json",
+		"authkey":       config.AUTHKEY,
 	}).Post(ctx, config.APISERVER, ChatReq.MustToJson())
 	if err != nil {
 		r.Response.Status = 500

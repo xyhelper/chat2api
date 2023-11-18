@@ -16,6 +16,7 @@ var (
 	MAXTIME     = 0
 	NOPLUGINS   = false
 	KEEPHISTORY = false
+	AUTHKEY     = ""
 )
 
 func init() {
@@ -49,6 +50,10 @@ func init() {
 	if keepHistory {
 		KEEPHISTORY = keepHistory
 	}
+	authKey := g.Cfg().MustGetWithEnv(ctx, "AUTHKEY").String()
+	if authKey != "" {
+		AUTHKEY = authKey
+	}
 
 	g.Log().Info(ctx, "PORT:", PORT)
 	g.Log().Info(ctx, "APISERVER:", APISERVER)
@@ -57,6 +62,7 @@ func init() {
 	g.Log().Info(ctx, "MAXTIME:", MAXTIME)
 	g.Log().Info(ctx, "NOPLUGINS:", NOPLUGINS)
 	g.Log().Info(ctx, "KEEPHISTORY:", KEEPHISTORY)
+	g.Log().Info(ctx, "AUTHKEY:", AUTHKEY)
 }
 
 func SK2TOKEN(ctx g.Ctx, SK string) (token string) {
