@@ -22,6 +22,7 @@ import (
 )
 
 var (
+	client    = g.Client()
 	ErrNoAuth = `{
 		"error": {
 			"message": "You didn't provide an API key. You need to provide your API key in an Authorization header using Bearer auth (i.e. Authorization: Bearer YOUR_KEY), or as the password field (with blank username) if you're accessing the API from your browser and are prompted for a username and password. You can obtain an API key from https://platform.openai.com/account/api-keys.",
@@ -237,6 +238,7 @@ func Completions(r *ghttp.Request) {
 	req := &apireq.Req{}
 	err := r.GetRequestStruct(req)
 	if err != nil {
+		g.Log().Error(ctx, "r.GetRequestStruct(req) error: ", err)
 		r.Response.Status = 400
 		r.Response.WriteJson(gjson.New(`{"error": "bad request"}`))
 		return
@@ -266,7 +268,7 @@ func Completions(r *ghttp.Request) {
 	}
 	// ChatReq.Dump()
 	// 请求openai
-	resp, err := g.Client().SetHeaderMap(g.MapStrStr{
+	resp, err := client.SetHeaderMap(g.MapStrStr{
 		"Authorization": "Bearer " + token,
 		"Content-Type":  "application/json",
 		"authkey":       config.AUTHKEY,
@@ -279,8 +281,7 @@ func Completions(r *ghttp.Request) {
 	defer resp.Close()
 	// 如果返回结果不是200
 	if resp.StatusCode != 200 {
-		// resp.RawDump()
-
+		g.Log().Error(ctx, "resp.StatusCode: ", resp.StatusCode)
 		r.Response.Status = resp.StatusCode
 		r.Response.WriteJson(gjson.New(resp.ReadAllString()))
 		return
