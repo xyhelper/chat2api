@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"net/http"
 	"strings"
 	"time"
 
@@ -22,7 +21,7 @@ import (
 )
 
 var (
-	client    = g.Client()
+	// client    = g.Client()
 	ErrNoAuth = `{
 		"error": {
 			"message": "You didn't provide an API key. You need to provide your API key in an Authorization header using Bearer auth (i.e. Authorization: Bearer YOUR_KEY), or as the password field (with blank username) if you're accessing the API from your browser and are prompted for a username and password. You can obtain an API key from https://platform.openai.com/account/api-keys.",
@@ -221,7 +220,7 @@ func Completions(r *ghttp.Request) {
 		r.Response.WriteJson(gjson.New(ErrNoAuth))
 		return
 	}
-	g.Log().Info(ctx, "authkey: ", authkey)
+	// g.Log().Info(ctx, "authkey: ", authkey)
 	var token string
 	if config.PASSMODE {
 		token = authkey
@@ -233,7 +232,7 @@ func Completions(r *ghttp.Request) {
 		r.Response.WriteJson(gjson.New(ErrKeyInvalid))
 		return
 	}
-	g.Log().Debug(ctx, "token: ", token)
+	// g.Log().Debug(ctx, "token: ", token)
 	// 从请求中获取参数
 	req := &apireq.Req{}
 	err := r.GetRequestStruct(req)
@@ -268,7 +267,7 @@ func Completions(r *ghttp.Request) {
 	}
 	// ChatReq.Dump()
 	// 请求openai
-	resp, err := client.SetHeaderMap(g.MapStrStr{
+	resp, err := g.Client().SetHeaderMap(g.MapStrStr{
 		"Authorization": "Bearer " + token,
 		"Content-Type":  "application/json",
 		"authkey":       config.AUTHKEY,
@@ -279,6 +278,7 @@ func Completions(r *ghttp.Request) {
 		return
 	}
 	defer resp.Close()
+	// defer resp.Body.Close()
 	// 如果返回结果不是200
 	if resp.StatusCode != 200 {
 		g.Log().Error(ctx, "resp.StatusCode: ", resp.StatusCode)
@@ -286,18 +286,16 @@ func Completions(r *ghttp.Request) {
 		r.Response.WriteJson(gjson.New(resp.ReadAllString()))
 		return
 	}
+	if resp.Header.Get("Content-Type") != "text/event-stream; charset=utf-8" && resp.Header.Get("Content-Type") != "text/event-stream" {
+		g.Log().Error(ctx, "resp.Header.Get(Content-Type): ", resp.Header.Get("Content-Type"))
+		r.Response.Status = 500
+		r.Response.WriteJson(gjson.New(`{"detail": "internal server error"}`))
+		return
+	}
 
 	// 流式返回
 	if req.Stream {
-		//  流式回应
-		rw := r.Response.RawWriter()
-		flusher, ok := rw.(http.Flusher)
-		if !ok {
-			g.Log().Error(ctx, "rw.(http.Flusher) error")
-			r.Response.WriteStatusExit(500)
-			return
-		}
-		r.Response.Header().Set("Content-Type", "text/event-stream; charset=utf-8")
+		r.Response.Header().Set("Content-Type", "text/event-stream")
 		r.Response.Header().Set("Cache-Control", "no-cache")
 		r.Response.Header().Set("Connection", "keep-alive")
 		// r.Response.Flush()
@@ -307,12 +305,14 @@ func Completions(r *ghttp.Request) {
 		for {
 			event, err := decoder.Decode()
 			if err != nil {
-				if err == io.EOF {
-					break
-				}
+				// if err == io.EOF {
+				// 	break
+				// }
+				// g.Log().Info(ctx, "释放资源")
 				break
 			}
 			text := event.Data()
+			// g.Log().Debug(ctx, "text: ", text)
 			if text == "" {
 				continue
 			}
@@ -320,16 +320,14 @@ func Completions(r *ghttp.Request) {
 				apiRespStrEnd := gstr.Replace(ApiRespStrStreamEnd, "apirespid", id)
 				apiRespStrEnd = gstr.Replace(apiRespStrEnd, "apicreated", gconv.String(time.Now().Unix()))
 				apiRespStrEnd = gstr.Replace(apiRespStrEnd, "apirespmodel", req.Model)
-				rw.Write([]byte("data: " + apiRespStrEnd + "\n\n"))
-				// apiRespStrEnd.Set("id", id)
-				// apiRespStrEnd.Set("created", time.Now().Unix())
-				// if req.Model == "gpt-4" {
-				// 	apiRespStrEnd.Set("model", "gpt-4")
-				// }
-				// rw.Write([]byte("data: " + apiRespStrEnd.String() + "\n\n"))
-				rw.Write([]byte("data: " + text + "\n\n"))
-				flusher.Flush()
-				break
+				r.Response.Writefln("data: " + apiRespStrEnd + "\n\n")
+				r.Response.Flush()
+				r.Response.Writefln("data: " + text + "\n\n")
+				r.Response.Flush()
+				continue
+				// resp.Close()
+
+				// break
 			}
 			// gjson.New(text).Dump()
 			role := gjson.New(text).Get("message.author.role").String()
@@ -364,10 +362,10 @@ func Completions(r *ghttp.Request) {
 				sortJson, err := json.Marshal(apiRespStruct)
 				if err != nil {
 					fmt.Println("转换JSON出错:", err)
-					return
+					continue
 				}
-				rw.Write([]byte("data: " + string(sortJson) + "\n\n"))
-				flusher.Flush()
+				r.Response.Writefln("data: " + string(sortJson) + "\n\n")
+				r.Response.Flush()
 			}
 
 		}
@@ -389,6 +387,7 @@ func Completions(r *ghttp.Request) {
 				continue
 			}
 			if text == "[DONE]" {
+				resp.Close()
 				break
 			}
 			// gjson.New(text).Dump()
@@ -400,6 +399,7 @@ func Completions(r *ghttp.Request) {
 				}
 			}
 		}
+		decoder.Decode()
 		completionTokens := CountTokens(content)
 		promptTokens := CountTokens(newMessages)
 		totalTokens := completionTokens + promptTokens
