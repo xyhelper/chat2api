@@ -301,6 +301,8 @@ func Completions(r *ghttp.Request) {
 		// r.Response.Flush()
 		message := ""
 		decoder := eventsource.NewDecoder(resp.Body)
+		defer decoder.Decode()
+
 		id := config.GenerateID(29)
 		for {
 			event, err := decoder.Decode()
@@ -364,7 +366,7 @@ func Completions(r *ghttp.Request) {
 					fmt.Println("转换JSON出错:", err)
 					continue
 				}
-				r.Response.Writefln("data: " + string(sortJson) + "\n\n")
+				r.Response.Writeln("data: " + string(sortJson) + "\n\n")
 				r.Response.Flush()
 			}
 
@@ -374,6 +376,8 @@ func Completions(r *ghttp.Request) {
 		// 非流式回应
 		content := ""
 		decoder := eventsource.NewDecoder(resp.Body)
+		defer decoder.Decode()
+
 		for {
 			event, err := decoder.Decode()
 			if err != nil {
@@ -399,7 +403,6 @@ func Completions(r *ghttp.Request) {
 				}
 			}
 		}
-		decoder.Decode()
 		completionTokens := CountTokens(content)
 		promptTokens := CountTokens(newMessages)
 		totalTokens := completionTokens + promptTokens

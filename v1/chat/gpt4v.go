@@ -164,6 +164,8 @@ func Gpt4v(r *ghttp.Request) {
 		// r.Response.Flush()
 		message := ""
 		decoder := eventsource.NewDecoder(resp.Body)
+		defer decoder.Decode()
+
 		id := config.GenerateID(29)
 		for {
 			event, err := decoder.Decode()
@@ -247,6 +249,8 @@ func Gpt4v(r *ghttp.Request) {
 				}
 			}
 		}
+		decoder.Decode()
+
 		completionTokens := CountTokens(content)
 		promptTokens := CountTokens(message)
 		totalTokens := completionTokens + promptTokens
