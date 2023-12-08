@@ -286,10 +286,12 @@ func Completions(r *ghttp.Request) {
 	var ChatReq *gjson.Json
 	if gstr.HasPrefix(req.Model, "gpt-4") {
 		ChatReq = gjson.New(Chat4ReqStr)
-	} else if gstr.HasPrefix(req.Model, "gpt-4-turbo") {
-		ChatReq = gjson.New(ChatTurboReqStr)
 	} else {
 		ChatReq = gjson.New(ChatReqStr)
+	}
+
+	if gstr.HasPrefix(req.Model, "gpt-4-turbo") {
+		ChatReq = gjson.New(ChatTurboReqStr)
 	}
 
 	ChatReq.Set("messages.0.content.parts.0", newMessages)
