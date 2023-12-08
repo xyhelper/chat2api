@@ -133,6 +133,13 @@ type Dalle3Resp struct {
 
 func Dalle3(r *ghttp.Request) {
 	ctx := r.Context()
+	if r.Method != "POST" {
+		r.Response.Status = 405
+		r.Response.WriteJson(g.Map{
+			"detail": "method not allowed",
+		})
+		return
+	}
 	authkey := strings.TrimPrefix(r.Header.Get("authorization"), "Bearer ")
 	if authkey == "" {
 		r.Response.Status = 401

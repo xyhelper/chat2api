@@ -69,6 +69,40 @@ var (
 		"arkose_token": null,
 		"force_paragen": false
 	}`
+	ChatTurboReqStr = `
+	{
+		"action": "next",
+		"messages": [
+			{
+				"id": "aaa2b2cc-e7e9-47c5-8171-0ff8a6d9d6d3",
+				"author": {
+					"role": "user"
+				},
+				"content": {
+					"content_type": "text",
+					"parts": [
+						"你好"
+					]
+				},
+				"metadata": {}
+			}
+		],
+		"parent_message_id": "aaa1403d-c61e-4818-90e0-93a99465aec6",
+		"model": "gpt-4",
+		"timezone_offset_min": -480,
+		"suggestions": [
+			"Design a database schema for an online merch store.",
+			"Can you come up with some names for a mocktail (non-alcoholic cocktail) with Coke and pomegranate syrup?",
+			"I'm going to cook for my date who claims to be a picky eater. Can you recommend me a dish that's easy to cook?",
+			"Make a content strategy for a newsletter featuring free local weekend events."
+		],
+		"history_and_training_disabled": true,
+		"conversation_mode": {
+			"kind": "primary_assistant"
+		},
+		"force_paragen": false,
+		"force_rate_limit": false
+	}`
 	Chat4ReqStr = `
 	{
 		"action": "next",
@@ -252,6 +286,8 @@ func Completions(r *ghttp.Request) {
 	var ChatReq *gjson.Json
 	if gstr.HasPrefix(req.Model, "gpt-4") {
 		ChatReq = gjson.New(Chat4ReqStr)
+	} else if gstr.HasPrefix(req.Model, "gpt-4-turbo") {
+		ChatReq = gjson.New(ChatTurboReqStr)
 	} else {
 		ChatReq = gjson.New(ChatReqStr)
 	}
@@ -273,6 +309,7 @@ func Completions(r *ghttp.Request) {
 		"authkey":       config.AUTHKEY,
 	}).Post(ctx, config.APISERVER, ChatReq.MustToJson())
 	if err != nil {
+		g.Log().Error(ctx, "g.Client().Post error: ", err)
 		r.Response.Status = 500
 		r.Response.WriteJson(gjson.New(`{"detail": "internal server error"}`))
 		return
