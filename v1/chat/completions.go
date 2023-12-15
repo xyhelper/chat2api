@@ -41,34 +41,29 @@ var (
 	ChatReqStr = `{
 		"action": "next",
 		"messages": [
-			{
-				"id": "aaa2a71f-eae4-4159-9efd-cd641985d50b",
-				"author": {
-					"role": "user"
-				},
-				"content": {
-					"content_type": "text",
-					"parts": [
-						"hi"
-					]
-				},
-				"metadata": {}
-			}
+		  {
+			"id": "aaa2f210-64e1-4f0d-aa51-e73fe1ae74af",
+			"author": { "role": "user" },
+			"content": { "content_type": "text", "parts": ["1\n"] },
+			"metadata": {}
+		  }
 		],
-		"suggestions": [
-			"Design a database schema for an online merch store.",
-			"Make a content strategy for a newsletter featuring free local weekend events.",
-			"Help me study vocabulary: write a sentence for me to fill in the blank, and I'll try to pick the correct option.",
-			"Come up with 5 concepts for a retro-style arcade game."
-		],
-		"plugin_ids": [],
-		"parent_message_id": "aaa10d6a-8671-4308-9886-8591990f5539",
+		"parent_message_id": "aaa1a8ab-61d6-4fc0-a5f5-181015c2ebaf",
 		"model": "text-davinci-002-render-sha",
 		"timezone_offset_min": -480,
-		"history_and_training_disabled": true,
+		"suggestions": [
+		  "Brainstorm 5 episode ideas for my new podcast on urban design.",
+		  "Come up with 5 concepts for a retro-style arcade game.",
+		  "What are 5 creative things I could do with my kids' art? I don't want to throw them away, but it's also so much clutter.",
+		  "Show me a code snippet of a website's sticky header in CSS and JavaScript."
+		],
+		"history_and_training_disabled": false,
 		"arkose_token": null,
-		"force_paragen": false
-	}`
+		"conversation_mode": { "kind": "primary_assistant" },
+		"force_paragen": false,
+		"force_rate_limit": false
+	  }
+	  `
 	ChatTurboReqStr = `
 	{
 		"action": "next",
