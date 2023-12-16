@@ -1,24 +1,5 @@
 # CHAT2API
 
-将OPENAI官网接口转换为API格式，以兼容针对API开发的应用。
-
-据说给个star就可以免费用
-
-```bash
-curl https://api.xyhelper.cn/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer sk-api-xyhelper-cn-free-token-for-everyone-xyhelper" \
-  -d '{
-    "model": "gpt-3.5-turbo",
-    "messages": [{"role": "system", "content": "You are a helpful assistant."}, {"role": "user", "content": "Hello!"}],
-    "stream": true
-  }'
-```
-
-
-
-# CHAT2API
-
 
 ## 项目简介
 
@@ -57,8 +38,9 @@ curl https://api.xyhelper.cn/v1/chat/completions \
 ## 社区支持
 
 如果您有任何问题、建议或反馈，请随时联系我们或者在 [GitHub Issues](https://github.com/xyhelper/chat2api/issues) 上提交一个新的问题。
-或者联系微信客户，或telgram客服
-![images]("https://shop-1256119282.file.myqcloud.com/files/wx.jpg")
+或者联系微信客户，或telegram客服
+![wx](./images/wx.jpg)
+![telegram](./images/telegram.jpg)
 
 **请注意：问题的响应时间可能较长。**
 
