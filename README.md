@@ -39,8 +39,10 @@ curl https://api.xyhelper.cn/v1/chat/completions \
 
 如果您有任何问题、建议或反馈，请随时联系我们或者在 [GitHub Issues](https://github.com/xyhelper/chat2api/issues) 上提交一个新的问题。
 或者联系微信客户，或telegram客服
-![wx](./images/wx.jpg)
-![telegram](./images/telegram.jpg)
+| ![wx](./images/wx.jpg) | ![telegram](./images/telegram.jpg) |
+| ---------------------- | ---------------------------------- |
+| 企业微信               | telegram                           |
+
 
 **请注意：问题的响应时间可能较长。**
 
