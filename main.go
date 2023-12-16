@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	go ghttp.StartPProfServer(8199)
+	// go ghttp.StartPProfServer(8199)
 	s := g.Server()
 	s.SetPort(config.PORT)
 	s.BindHandler("/", Index)

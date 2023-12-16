@@ -58,7 +58,6 @@ var (
 		  "Show me a code snippet of a website's sticky header in CSS and JavaScript."
 		],
 		"history_and_training_disabled": false,
-		"arkose_token": null,
 		"conversation_mode": { "kind": "primary_assistant" },
 		"force_paragen": false,
 		"force_rate_limit": false
@@ -303,7 +302,7 @@ func Completions(r *ghttp.Request) {
 	resp, err := g.Client().SetHeaderMap(g.MapStrStr{
 		"Authorization": "Bearer " + token,
 		"Content-Type":  "application/json",
-		"authkey":       config.AUTHKEY,
+		// "authkey":       config.AUTHKEY,
 	}).Post(ctx, config.APISERVER, ChatReq.MustToJson())
 	if err != nil {
 		g.Log().Error(ctx, "g.Client().Post error: ", err)
@@ -320,16 +319,16 @@ func Completions(r *ghttp.Request) {
 		r.Response.WriteJson(gjson.New(resp.ReadAllString()))
 		return
 	}
-	if resp.Header.Get("Content-Type") != "text/event-stream; charset=utf-8" && resp.Header.Get("Content-Type") != "text/event-stream" {
-		g.Log().Error(ctx, "resp.Header.Get(Content-Type): ", resp.Header.Get("Content-Type"))
-		r.Response.Status = 500
-		r.Response.WriteJson(gjson.New(`{"detail": "internal server error"}`))
-		return
-	}
+	// if resp.Header.Get("Content-Type") != "text/event-stream; charset=utf-8" && resp.Header.Get("Content-Type") != "text/event-stream" {
+	// 	g.Log().Error(ctx, "resp.Header.Get(Content-Type): ", resp.Header.Get("Content-Type"))
+	// 	r.Response.Status = 500
+	// 	r.Response.WriteJson(gjson.New(`{"detail": "internal server error"}`))
+	// 	return
+	// }
 
 	// 流式返回
 	if req.Stream {
-		r.Response.Header().Set("Content-Type", "text/event-stream")
+		r.Response.Header().Set("Content-Type", "text/event-stream; charset=utf-8")
 		r.Response.Header().Set("Cache-Control", "no-cache")
 		r.Response.Header().Set("Connection", "keep-alive")
 		// r.Response.Flush()
