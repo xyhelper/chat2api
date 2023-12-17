@@ -57,7 +57,7 @@ var (
 		  "What are 5 creative things I could do with my kids' art? I don't want to throw them away, but it's also so much clutter.",
 		  "Show me a code snippet of a website's sticky header in CSS and JavaScript."
 		],
-		"history_and_training_disabled": false,
+		"history_and_training_disabled": true,
 		"conversation_mode": { "kind": "primary_assistant" },
 		"force_paragen": false,
 		"force_rate_limit": false

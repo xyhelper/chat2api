@@ -341,7 +341,7 @@ func UploadAzure(ctx g.Ctx, filepath string, token string) (file_id string, down
 		return
 	}
 	defer resdown.Close()
-	// resdown.RawDump()
+	resdown.RawDump()
 	download_url = gjson.New(resdown.ReadAllString()).Get("download_url").String()
 	if download_url == "" {
 		err = gerror.New("get download_url fail")
