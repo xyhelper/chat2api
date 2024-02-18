@@ -46,6 +46,7 @@ func Gpt4v(r *ghttp.Request) {
 		return
 	}
 	g.Log().Debug(ctx, "token: ", token)
+	ChatGPTAccountID := r.Header.Get("ChatGPT-Account-ID")
 	message := r.Get("message").String()
 	if message == "" {
 		r.Response.Status = 400
@@ -98,7 +99,7 @@ func Gpt4v(r *ghttp.Request) {
 	var size_bytess []int64
 	// 上传文件到azure
 	for _, filename := range filenames {
-		file_id, download_url, width, height, size_bytes, err := UploadAzure(ctx, "./temp/"+filename, token)
+		file_id, download_url, width, height, size_bytes, err := UploadAzure(ctx, "./temp/"+filename, token, ChatGPTAccountID)
 		if err != nil {
 			g.Log().Error(ctx, err)
 			r.Response.Status = 400
@@ -132,10 +133,14 @@ func Gpt4v(r *ghttp.Request) {
 
 	// ChatReq.Dump()
 	// 请求openai
-	resp, err := g.Client().SetHeaderMap(g.MapStrStr{
+	reqHeader := g.MapStrStr{
 		"Authorization": "Bearer " + token,
 		"Content-Type":  "application/json",
-	}).Post(ctx, config.APISERVER, ChatReq.MustToJson())
+	}
+	if ChatGPTAccountID != "" {
+		reqHeader["ChatGPT-Account-ID"] = ChatGPTAccountID
+	}
+	resp, err := g.Client().SetHeaderMap(reqHeader).Post(ctx, config.APISERVER, ChatReq.MustToJson())
 	if err != nil {
 		r.Response.Status = 500
 		r.Response.WriteJson(gjson.New(`{"detail": "internal server error"}`))
@@ -269,7 +274,7 @@ func Gpt4v(r *ghttp.Request) {
 
 }
 
-func UploadAzure(ctx g.Ctx, filepath string, token string) (file_id string, download_url string, width int, height int, size_bytes int64, err error) {
+func UploadAzure(ctx g.Ctx, filepath string, token string, ChatGPTAccountID string) (file_id string, download_url string, width int, height int, size_bytes int64, err error) {
 	// 检测文件是否存在
 	if !gfile.Exists(filepath) {
 		err = gerror.New("read file fail")
@@ -281,7 +286,14 @@ func UploadAzure(ctx g.Ctx, filepath string, token string) (file_id string, down
 	apihost := config.APIHOST
 
 	// 获取上传地址 backend-api/files  POST
-	res, err := g.Client().SetHeader("Authorization", "Bearer "+token).ContentJson().Post(ctx, apihost+"/backend-api/files", g.Map{
+	filesReqHeader := g.MapStrStr{
+		"Authorization": "Bearer " + token,
+		"Content-Type":  "application/json",
+	}
+	if ChatGPTAccountID != "" {
+		filesReqHeader["ChatGPT-Account-ID"] = ChatGPTAccountID
+	}
+	res, err := g.Client().SetHeaderMap(filesReqHeader).Post(ctx, apihost+"/backend-api/files", g.Map{
 		"file_name": fileName,
 		"file_size": fileSize,
 		"use_case":  "multimodal",
@@ -336,7 +348,14 @@ func UploadAzure(ctx g.Ctx, filepath string, token string) (file_id string, down
 		return
 	}
 	// 获取文件下载地址 backend-api/files/{file_id}/uploaded  POST
-	resdown, err := g.Client().SetHeader("Authorization", "Bearer "+token).ContentJson().Post(ctx, apihost+"/backend-api/files/"+file_id+"/uploaded")
+	uploadedReqHeader := g.MapStrStr{
+		"Authorization": "Bearer " + token,
+		"Content-Type":  "application/json",
+	}
+	if ChatGPTAccountID != "" {
+		uploadedReqHeader["ChatGPT-Account-ID"] = ChatGPTAccountID
+	}
+	resdown, err := g.Client().SetHeaderMap(uploadedReqHeader).Post(ctx, apihost+"/backend-api/files/"+file_id+"/uploaded")
 	if err != nil {
 		return
 	}

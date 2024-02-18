@@ -261,6 +261,8 @@ func Completions(r *ghttp.Request) {
 		return
 	}
 	// g.Log().Debug(ctx, "token: ", token)
+	ChatGPTAccountID := r.Header.Get("ChatGPT-Account-ID")
+	g.Log().Debug(ctx, "ChatGPTAccountID: ", ChatGPTAccountID)
 	// 从请求中获取参数
 	req := &apireq.Req{}
 	err := r.GetRequestStruct(req)
@@ -298,12 +300,15 @@ func Completions(r *ghttp.Request) {
 		ChatReq.Set("history_and_training_disabled", false)
 	}
 	// ChatReq.Dump()
-	// 请求openai
-	resp, err := g.Client().SetHeaderMap(g.MapStrStr{
+	reqHeader := g.MapStrStr{
 		"Authorization": "Bearer " + token,
 		"Content-Type":  "application/json",
-		// "authkey":       config.AUTHKEY,
-	}).Post(ctx, config.APISERVER, ChatReq.MustToJson())
+	}
+	if ChatGPTAccountID != "" {
+		reqHeader["ChatGPT-Account-ID"] = ChatGPTAccountID
+	}
+	// 请求openai
+	resp, err := g.Client().SetHeaderMap(reqHeader).Post(ctx, config.APISERVER, ChatReq.MustToJson())
 	if err != nil {
 		g.Log().Error(ctx, "g.Client().Post error: ", err)
 		r.Response.Status = 500
